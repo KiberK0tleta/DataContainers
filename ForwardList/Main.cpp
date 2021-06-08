@@ -18,24 +18,37 @@ public:
 		count--;
 		cout << "EDestructor:\t" << this << endl;
 	}
-	friend class FarwardList;
+	friend class ForwardList;
 };
 int Element::count = 0; //Инициализация стат переменной
 
-class FarwardList
+class ForwardList
 {
 	Element* Head;
 	int size;
 public:
-	FarwardList()
+	ForwardList()
 	{
 		Head = nullptr;
 		size = 0;
 		cout << "LConstructor:\t" << this << endl;
 	}
-	~FarwardList()
+	ForwardList(const ForwardList& other)
 	{
-		
+		Element* Temp = other.Head;
+		while (Temp)
+		{
+			push_back(Temp->Data);
+			Temp = Temp->pNext;
+		}
+		cout << "LCopyConstructor:\t" << this << endl;
+	}
+	~ForwardList()
+	{
+		while (Head)
+		{
+			pop_front();
+		}
 		cout << "LDestructor:\t" << this << endl;
 	}
 	//---------------------------------------------//
@@ -98,6 +111,27 @@ public:
 		Temp->pNext = New;
 		size++;
 	}
+
+	void erase(int index)
+	{
+		if (index > size)return;
+		if(index==0)
+		{
+			pop_front();
+			return;
+		}
+		Element* Temp = Head;
+		for (int i = 0; i <index-1; i++)
+		{
+			Temp = Temp->pNext;
+			Element* to_del = Temp->pNext;
+			Temp->pNext = Temp->pNext->pNext;
+			delete to_del;
+			size--;
+		}
+	}
+
+
 	void print()
 	{
 		Element* Temp = Head;
@@ -111,18 +145,25 @@ public:
 	}
 };
 
+
+#define BASE_CHECK
+
+
+
+
 void main()
 {
 	setlocale(LC_ALL, "");
 	int n;
 	cout << "Размер списка: "; cin >> n;
-	FarwardList list;
+	ForwardList list;
 	for (int i = 0; i < n; i++)
 	{
 		list.push_back(rand() % 100);
 	}
 	list.print();
 
+#ifndef BASE_CHECK
 	int value;
 	int index;
 	cout << "value:"; cin >> value;
@@ -130,11 +171,16 @@ void main()
 	list.insert(value, index);
 	list.print();
 
-	cout << "list2" << endl;
-	FarwardList list2;
+	/*cout << "list2" << endl;
+	ForwardList list2;
 	list2.push_back(3);
 	list2.push_back(5);
 	list2.push_back(8);
+	list2.print();*/
+	cout << "index Удал эл: "; cin >> index;
+	list.erase(index);
+	list.print();
+#endif // !BASE_CHECK
+	ForwardList list2 = list;
 	list2.print();
-		
 }
