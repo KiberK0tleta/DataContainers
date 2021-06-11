@@ -1,5 +1,8 @@
 ﻿#include<iostream>
 using namespace std;
+using std::cin;
+using std::cout;
+using std::endl;
 #define tab "\t"
 
 class Element
@@ -11,27 +14,103 @@ public:
 	Element(int Data, Element* pNext = nullptr) :Data(Data), pNext(pNext)
 	{
 		count++;
-		cout << "EConstructor:\t" << this << endl;
+		//cout << "EConstructor:\t" << this << endl;
 	}
 	~Element()
 	{
 		count--;
-		cout << "EDestructor:\t" << this << endl;
+		//cout << "EDestructor:\t" << this << endl;
 	}
 	friend class ForwardList;
+	friend class Iterator;
 };
 int Element::count = 0; //Инициализация стат переменной
+
+class Iterator
+{
+	Element* Temp;
+public:
+	Iterator(Element* Temp = nullptr)
+	{
+		this->Temp = Temp;
+		//cout << "IConstructor:\t" << this << endl;
+	}
+	~Iterator()
+	{
+		//cout << "IDestructor:\t" << this << endl;
+	}
+	//--------------------operators--------------------//
+	Iterator& operator++()
+	{
+		Temp = Temp->pNext;
+		return *this;
+	}
+	Iterator operator++(int)
+	{
+		Iterator old = *this;
+		Temp = Temp->pNext;
+		return old;
+	}
+	bool operator==(const Iterator& other)const
+	{
+		return this->Temp == other.Temp;
+	}
+	bool operator!=(const Iterator& other)const
+	{
+		return this->Temp != other.Temp;
+	}
+	Element*& operator->()
+	{
+		return Temp;
+	}
+	Element* get_currend_address()
+	{
+		return Temp;
+	}
+	int& operator*()const
+	{
+		return Temp->Data;
+	}
+	int& operator*()
+	{
+		return Temp->Data;
+	}
+	//-------------------------------------------------//
+};
+
+
 
 class ForwardList
 {
 	Element* Head;
 	int size;
 public:
+	Iterator getHead()
+	{
+		return Head;
+	}
+	Iterator begin()
+	{
+		return Head;
+	}
+	Iterator end()
+	{
+		return nullptr;
+	}
 	ForwardList()
 	{
 		Head = nullptr;
 		size = 0;
 		cout << "LConstructor:\t" << this << endl;
+	}
+	ForwardList(initializer_list<int> il):ForwardList()
+	{
+		//il - контейнер такой же как ForwardList у любого контейнера есть методы begin() и end() которые возвращают указатели на начало и конец контейнеров 
+		cout << typeid(il.begin()).name() << endl;
+		for (int const* it = il.begin(); it != il.end(); it++)
+		{
+			push_back(*it); // it итератор который проходит по il
+		}
 	}
 	ForwardList(const ForwardList& other)
 	{
@@ -45,11 +124,23 @@ public:
 	}
 	~ForwardList()
 	{
-		while (Head)
-		{
-			pop_front();
-		}
+		while (Head)pop_front();
 		cout << "LDestructor:\t" << this << endl;
+	}
+	//--------------------operators--------------------//
+	ForwardList& operator=(const ForwardList& other)
+	{
+		if (this == &other)return *this;
+		while (Head)pop_front();
+		Element* Temp = other.Head;
+		while (Temp)
+		{
+			push_back(Temp->Data);
+			Temp = Temp->pNext;
+		}
+		cout << "LCopyAssigment:\t" << this << endl;
+		return *this;
+
 	}
 	//---------------------------------------------//
 	void push_front(int Data)
@@ -134,12 +225,16 @@ public:
 
 	void print()
 	{
+		/*while (Temp != nullptr)
 		Element* Temp = Head;
-		while (Temp != nullptr)
 		{
 			cout << Temp << tab << Temp->Data << tab << Temp->pNext << endl;
 			Temp = Temp->pNext;
-		}
+		}*/
+		for (Iterator Temp = Head; Temp != nullptr; ++Temp)
+			//cout << Temp.get_currend_address()<< tab <<Temp->Data << tab<<Temp->pNext<<endl;
+			cout << *Temp << tab;
+		cout << endl;
 		cout << "Кол-во эл в списку: " << size << endl;
 		cout << "Общее Кол-во эл в списку: " << Element::count << endl;
 	}
@@ -147,13 +242,15 @@ public:
 
 
 #define BASE_CHECK
-
+#define ITRATOR_CHACK
 
 
 
 void main()
 {
+//-------------------------------------------------------//
 	setlocale(LC_ALL, "");
+#ifndef BASE_CHECK
 	int n;
 	cout << "Размер списка: "; cin >> n;
 	ForwardList list;
@@ -161,7 +258,18 @@ void main()
 	{
 		list.push_back(rand() % 100);
 	}
+	list = list;
 	list.print();
+#endif // !BASE_CHECK
+
+#ifndef ITRATOR_CHACK
+	for (Iterator it = list.getHead(); it != nullptr; it++)
+	{
+		*it = rand() % 100;
+	}
+
+	list.print();
+#endif // !ITRATOR_CHACK
 
 #ifndef BASE_CHECK
 	int value;
@@ -180,7 +288,16 @@ void main()
 	cout << "index Удал эл: "; cin >> index;
 	list.erase(index);
 	list.print();
-#endif // !BASE_CHECK
 	ForwardList list2 = list;
 	list2.print();
+#endif // !BASE_CHECK
+//-------------------------------------------------------//
+	ForwardList list = { 3,5,8,13,21 };
+	list.print();
+	for (int i : list)
+	{
+		cout << i << tab;
+	}
+	cout << endl;
+
 }
